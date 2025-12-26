@@ -1,0 +1,76 @@
+openapi: 3.0.3
+info:
+  title: ESNODE Runtime API
+  version: 0.1.0
+paths:
+  /v1/chat/completions:
+    post:
+      summary: Create a chat completion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model
+                - messages
+              properties:
+                model:
+                  type: string
+                stream:
+                  type: boolean
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - role
+                      - content
+                    properties:
+                      role:
+                        type: string
+                      content:
+                        type: string
+      responses:
+        "200":
+          description: Completion response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  object:
+                    type: string
+                  created:
+                    type: integer
+                    format: int64
+                  model:
+                    type: string
+                  choices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        index:
+                          type: integer
+                        message:
+                          type: object
+                          properties:
+                            role:
+                              type: string
+                            content:
+                              type: string
+                        finish_reason:
+                          type: string
+            text/event-stream:
+              schema:
+                type: string
+              example: |
+                data: {"id":"cmpl-stub","object":"chat.completion.chunk","created":0,"model":"local-gguf","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}]}
+
+                data: {"id":"cmpl-stub","object":"chat.completion.chunk","created":0,"model":"local-gguf","choices":[{"index":0,"delta":{"content":"hello"},"finish_reason":null}]}
+
+                data: [DONE]
