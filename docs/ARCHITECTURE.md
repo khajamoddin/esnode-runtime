@@ -4,7 +4,7 @@
 ESNODE Runtime is organized as a small runtime stack plus optional UI:
 - **runtime-core (Rust crate)**: contract traits + request/response types. No backend deps.
 - **runtime-server (Rust binary)**: HTTP endpoints (OpenAI compat + ESNODE-native) and optional gRPC.
-- **gateway (Go)**: OpenAI-compatible API and ESNODE-native gRPC forwarding.
+- **gateway (Go)**: OpenAI-compatible API and ESNODE-native gRPC forwarding (stub).
 - **runtime-studio (Vite UI)**: optional GUI for local ops and demos.
 
 Backends (llamacpp/onnxrt/torch) are stub crates today; they depend on `runtime-core` and plug into
@@ -78,5 +78,5 @@ over HTTP and exposes health, model list/load, and inference (streaming + non-st
 - Cons: build complexity, more platform constraints.
 
 ## Security and governance
-- Gateway is the policy enforcement point (auth, RPM, concurrency, token budgets).
+- Gateway is the policy enforcement point (auth, RPM, concurrency, token budgets) in the target design.
 - Runtime server provides defense-in-depth (timeouts, cache limits).

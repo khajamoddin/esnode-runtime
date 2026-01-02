@@ -1,11 +1,14 @@
 # ESNODE Runtime v0 Milestones
 
-## Definition of Done (v0)
+## Definition of Done (v0 target)
 A user can:
 1) Run ESNODE Runtime locally with a GGUF model
 2) Call it via an OpenAI-compatible Chat Completions API (streaming)
 3) Enable basic governance (API keys + rate limit + token budget)
 4) Get basic telemetry (Prometheus metrics + OTEL traces)
+
+Current status: runtime-server + gateway stubs, bundle registry, streaming plumbing, and a
+Runtime Studio GUI. Backend execution, governance enforcement, and telemetry exporters are pending.
 
 ---
 

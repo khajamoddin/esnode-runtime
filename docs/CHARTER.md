@@ -1,22 +1,22 @@
 # ESNODE Runtime Charter (v0)
 
 ## Mission
-ESNODE Runtime provides a production-grade execution layer for LLM inference that is:
+ESNODE Runtime provides an early-stage execution layer for LLM inference that is:
 - CPU-first and hardware-agnostic
-- governable by default (policy + audit)
-- scalable by default (containers/Kubernetes)
-- observable by default (metrics/traces/logs)
+- governable by default (policy + audit) in the target design
+- scalable by default (containers/Kubernetes) in the target design
+- observable by default (metrics/traces/logs) in the target design
 
 ## What ESNODE Runtime IS
 1) **Execution**
-   - Wraps one or more inference engines (v0: llama.cpp/GGUF)
+   - Wraps one or more inference engines (v0 target: llama.cpp/GGUF)
    - Provides a stable "Engine API" for generation, streaming, and model lifecycle
    - Offers predictable resource controls (threads, memory, concurrency, timeouts)
 
 2) **Governance (enforcement, not dashboards)**
-   - Policies are evaluated before and during execution
-   - Supports multi-tenant controls: auth, quotas, rate limits, data-access rules
-   - Produces an auditable trail: inputs, outputs, sources, policy decisions
+   - Policies are evaluated before and during execution (target)
+   - Supports multi-tenant controls: auth, quotas, rate limits, data-access rules (target)
+   - Produces an auditable trail: inputs, outputs, sources, policy decisions (target)
 
 3) **Scale**
    - Runs locally, on a single server, or in Kubernetes
@@ -24,9 +24,9 @@ ESNODE Runtime provides a production-grade execution layer for LLM inference tha
    - Supports horizontal scale via stateless gateway + replicated runtime nodes
 
 4) **Observability**
-   - Emits OpenTelemetry traces by default
-   - Exposes Prometheus metrics by default
-   - Produces structured logs (JSON) with redaction options
+   - Emits OpenTelemetry traces by default (target)
+   - Exposes Prometheus metrics by default (target)
+   - Produces structured logs (JSON) with redaction options (target)
 
 ## What ESNODE Runtime is NOT (non-goals)
 - Not a workflow builder (use Flowise/Dify/Langflow as ecosystem clients)

@@ -1,11 +1,11 @@
 # ESNODE Runtime
 
-**ESNODE Runtime** is a production-grade LLM **execution + governance + scale** layer.
+**ESNODE Runtime** is an early-stage LLM **execution + governance + scale** layer with
+scaffolding in place for backends, policy hooks, and observability.
 
-It wraps fast, portable inference engines (v0: **llama.cpp / GGUF**) and adds what teams actually need to run LLMs in real environments:
-- **Governance** (policy enforcement, quotas, audit)
-- **Scale** (Docker/Kubernetes-ready, multi-node)
-- **Observability** (OpenTelemetry + Prometheus)
+The current repo ships a stub runtime server + gateway, plus a Vite-based Runtime Studio UI.
+Real backends (v0 target: **llama.cpp / GGUF**) and enforcement/telemetry are planned but not yet
+implemented.
 
 > ESNODE Runtime is not a workflow builder UI.
 > It is the runtime layer that existing tools can plug into.
@@ -29,28 +29,25 @@ ESNODE Runtime focuses on the missing "runtime" layer.
 
 ---
 
-## Core capabilities (v0)
+## Core capabilities (current state)
 
 ### Execution
-- GGUF model serving via llama.cpp (CPU-first)
-- Streaming generation
-- Concurrency and time budgets (defense-in-depth)
+- HTTP + optional gRPC runtime server with stub inference backend
+- Streaming response plumbing (SSE / gRPC stream)
+- Model bundle registry with basic validation
+- Router + in-memory model cache
 
 ### Governance (enforced)
-- API key authentication
-- Rate limits (RPM)
-- Concurrency limits
-- Token budgets
-- Audit logs
+- Policy interfaces are defined
+- Enforcement and rate limits are not wired yet
 
 ### Scale
-- Container-first deployment
-- Kubernetes-ready (deploy multiple runtime nodes)
-- Gateway routes traffic across nodes
+- Container-first Dockerfiles + Compose scaffolding
+- Kubernetes scaffolding directory (empty)
 
 ### Observability
-- Prometheus metrics (latency, tokens/sec, errors)
-- OpenTelemetry traces (gateway -> policy -> engine)
+- Telemetry interface exists
+- No Prometheus/OTel exporters wired yet
 
 ---
 
@@ -76,8 +73,8 @@ curl http://localhost:8080/v1/chat/completions \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "local-gguf",
-    "stream": true,
+    "model": "fixture-model",
+    "stream": false,
     "messages": [{"role":"user","content":"Hello from ESNODE Runtime"}]
   }'
 ```
@@ -138,12 +135,12 @@ cargo run -p runtime-server --features proto-gen
 
 ## Repository layout
 - crates/runtime-core/ — Rust contracts + types (backend-agnostic)
-- crates/runtime-server/ — Rust HTTP/gRPC server stub
+- crates/runtime-server/ — Rust HTTP server with optional gRPC and stub backend
 - crates/runtime-backend/ — backend registry + loader
 - crates/backend-*/ — backend implementations (onnxrt/llamacpp/torch)
 - crates/runtime-cli/ — `esnode` CLI stub
 - crates/runtime-proto/ — gRPC proto definitions
-- gateway/ — Go gateway exposing OpenAI-compatible API + governance (legacy stub)
+- gateway/ — Go gateway exposing OpenAI-compatible API + ESNODE-native gRPC forwarding (stub)
 - api/ — OpenAPI + examples
 - bundles/ — sample model bundles
 - integrations/ — docker + kubernetes scaffolding
