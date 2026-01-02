@@ -1,0 +1,10 @@
+name: fixture-model
+version: v0
+source:
+  kind: local_path
+  path: models/fixture.gguf
+format: gguf
+backend: llamacpp
+backend_settings: {}
+labels:
+  family: fixture

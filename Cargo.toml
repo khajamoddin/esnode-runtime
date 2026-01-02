@@ -1,3 +1,12 @@
 [workspace]
-members = ["runtime-node"]
+members = [
+    "crates/runtime-core",
+    "crates/runtime-server",
+    "crates/runtime-backend",
+    "crates/backend-onnxrt",
+    "crates/backend-llamacpp",
+    "crates/backend-torch",
+    "crates/runtime-cli",
+    "crates/runtime-proto",
+]
 resolver = "2"

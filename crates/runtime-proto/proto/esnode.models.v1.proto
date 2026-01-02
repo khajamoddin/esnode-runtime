@@ -1,0 +1,10 @@
+syntax = "proto3";
+package esnode.models.v1;
+
+option go_package = "github.com/estimatedstocks/esnode-runtime/gen/go/esnode/models/v1;modelsv1";
+
+message ModelInfo {
+  string name = 1;
+  string version = 2;
+  map<string,string> labels = 3;
+}

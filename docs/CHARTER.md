@@ -36,6 +36,7 @@ ESNODE Runtime provides a production-grade execution layer for LLM inference tha
 
 ## Design principles
 - **Stable contracts**: external API + internal canonical request schema remain stable
+- **Contract-first core**: runtime-core owns all request/response and backend contracts
 - **Pluggability**: engines, vector DBs, telemetry backends, and APIs are replaceable
 - **Safe-by-default**: deny-by-default policies available; never silently bypass governance
 - **Portable deployments**: same config works on laptop -> Docker -> Kubernetes
@@ -44,11 +45,13 @@ ESNODE Runtime provides a production-grade execution layer for LLM inference tha
 ## v0 target outcomes
 - A user can run ESNODE Runtime locally with a GGUF model and call it using:
   - OpenAI-compatible chat completions API (streaming supported)
+- A user can list/load models through bundle-backed ESNODE-native endpoints
 - A user can enable basic governance:
   - API key auth + per-key rate limit + token budget
 - A user can observe:
   - p50/p95 latency, tokens/sec, errors, concurrent sessions
   - OTEL traces across request -> policy -> engine
+- Optional (v0.x): a lightweight Runtime Studio UI for load/list/infer/health.
 
 ## Future-facing boundary
 ESNODE Runtime will remain the execution + governance + scale layer.

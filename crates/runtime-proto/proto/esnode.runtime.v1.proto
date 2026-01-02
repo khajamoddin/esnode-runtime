@@ -1,0 +1,119 @@
+syntax = "proto3";
+package esnode.runtime.v1;
+
+option go_package = "github.com/estimatedstocks/esnode-runtime/gen/go/esnode/runtime/v1;runtimev1";
+
+message HealthRequest {}
+message HealthResponse {
+  string status = 1; // "ok"
+  string version = 2;
+}
+
+message ModelSpec {
+  string name = 1;
+  string version = 2;
+  string format = 3;     // "onnx" | "gguf" | "torchscript" | "hf" | "auto"
+  string backend = 4;    // "auto" | "onnxrt" | "llamacpp" | "torch"
+  string source_kind = 5;// "local_path" | "http" | "registry"
+  string source = 6;     // path/url/name
+  string sha256 = 7;     // optional
+  string backend_settings_json = 8;
+  map<string,string> labels = 9;
+}
+
+message LoadModelRequest { ModelSpec spec = 1; }
+message LoadModelResponse { string model_handle = 1; }
+
+message UnloadModelRequest { string model_handle = 1; }
+message UnloadModelResponse { bool ok = 1; }
+
+message ListModelsRequest {}
+message ListModelsResponse { repeated ModelSpec models = 1; }
+
+message ChatMessage {
+  string role = 1;
+  string content = 2;
+  string name = 3;
+}
+
+message InferenceParams {
+  uint32 max_tokens = 1;
+  float temperature = 2;
+  float top_p = 3;
+  uint32 top_k = 4;
+  bool stream = 5;
+  uint64 timeout_ms = 6;
+}
+
+message InferRequest {
+  string request_id = 1;
+  string model_handle = 2;
+
+  oneof input {
+    ChatInput chat = 3;
+    CompletionInput completion = 4;
+  }
+
+  InferenceParams params = 5;
+  map<string,string> metadata = 6;
+}
+
+message ChatInput { repeated ChatMessage messages = 1; }
+message CompletionInput { string prompt = 1; }
+
+message TokenUsage {
+  uint32 prompt_tokens = 1;
+  uint32 completion_tokens = 2;
+  uint32 total_tokens = 3;
+}
+
+message InferResponse {
+  string request_id = 1;
+  string model = 2;
+  oneof output {
+    ChatOutput chat = 3;
+    CompletionOutput completion = 4;
+  }
+  TokenUsage usage = 5;
+  map<string,string> metadata = 6;
+}
+
+message ChatOutput { ChatMessage message = 1; }
+message CompletionOutput { string text = 1; }
+
+message StreamChunk {
+  string request_id = 1;
+  oneof chunk {
+    StreamStart start = 2;
+    StreamDelta delta = 3;
+    StreamEvent event = 4;
+    StreamEnd end = 5;
+  }
+}
+
+message StreamStart {
+  string model = 1;
+  map<string,string> metadata = 2;
+}
+
+message StreamDelta { string delta_text = 1; }
+
+message StreamEvent {
+  string name = 1;
+  string data_json = 2;
+}
+
+message StreamEnd { TokenUsage usage = 1; }
+
+service RuntimeService {
+  rpc Health(HealthRequest) returns (HealthResponse);
+
+  // Model lifecycle
+  rpc LoadModel(LoadModelRequest) returns (LoadModelResponse);
+  rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse);
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+
+  // Inference
+  rpc Infer(InferRequest) returns (InferResponse);
+  rpc InferStream(InferRequest) returns (stream StreamChunk);
+}

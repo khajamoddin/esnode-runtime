@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">ESNODE Runtime Studio</p>
+          <h1>Operate your runtime in one console.</h1>
+          <p class="lede">
+            Load bundles, run inference, and observe health for your runtime-server.
+          </p>
+        </div>
+        <div class="status-card" id="statusCard">
+          <div class="status-row">
+            <span>Gateway</span>
+            <span id="gatewayStatus" class="pill neutral">unknown</span>
+          </div>
+          <div class="status-row">
+            <span>Runtime Server</span>
+            <span id="runtimeStatus" class="pill neutral">unknown</span>
+          </div>
+          <div class="status-row">
+            <span>Metrics</span>
+            <a id="metricsLink" href="#" class="pill link">open</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Connection</h2>
+          <p>Point the studio at your gateway or runtime-server URL.</p>
+        </div>
+        <div class="grid">
+          <label class="field">
+            <span>Base URL</span>
+            <input id="baseUrl" type="url" placeholder="http://localhost:8080" />
+          </label>
+          <div class="actions">
+            <button id="saveBase" class="btn primary">Save</button>
+            <button id="ping" class="btn">Ping Health</button>
+          </div>
+        </div>
+        <p class="hint">Health checks use <code>/healthz</code> and <code>/readyz</code>.</p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Models</h2>
+          <p>Load bundle-backed models and keep a running list of specs.</p>
+        </div>
+        <div class="grid two">
+          <form id="loadForm" class="stack">
+            <label class="field">
+              <span>Bundle Name</span>
+              <input id="modelName" type="text" placeholder="fixture-model" required />
+            </label>
+            <label class="field">
+              <span>Version</span>
+              <input id="modelVersion" type="text" placeholder="v0" value="v0" />
+            </label>
+            <label class="field">
+              <span>Source Path (bundle-relative)</span>
+              <input id="modelPath" type="text" placeholder="models/fixture.gguf" />
+            </label>
+            <div class="actions">
+              <button class="btn primary" type="submit">Load Bundle</button>
+              <button id="refreshModels" class="btn" type="button">Refresh List</button>
+            </div>
+            <p class="hint">Load resolves bundle specs. A missing bundle returns 404.</p>
+          </form>
+          <div class="card">
+            <div class="card-header">
+              <h3>Available Models</h3>
+              <span id="modelCount" class="pill neutral">0</span>
+            </div>
+            <ul id="modelList" class="list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Inference</h2>
+          <p>Run ESNODE-native inference with streaming tokens.</p>
+        </div>
+        <form id="inferForm" class="stack">
+          <div class="grid two">
+            <label class="field">
+              <span>Model</span>
+              <input id="inferModel" type="text" placeholder="fixture-model" required />
+            </label>
+            <label class="field">
+              <span>Mode</span>
+              <select id="inferMode">
+                <option value="chat">Chat</option>
+                <option value="completion">Completion</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">
+            <span>Prompt / Message</span>
+            <textarea id="inferPrompt" rows="4" placeholder="Say hello from Runtime Studio"></textarea>
+          </label>
+          <div class="grid two">
+            <label class="field">
+              <span>Max Tokens</span>
+              <input id="inferMaxTokens" type="number" min="1" placeholder="64" />
+            </label>
+            <label class="field">
+              <span>Temperature</span>
+              <input id="inferTemperature" type="number" min="0" max="2" step="0.1" placeholder="0.7" />
+            </label>
+          </div>
+          <div class="actions">
+            <label class="toggle">
+              <input id="inferStream" type="checkbox" />
+              <span>Stream tokens</span>
+            </label>
+            <button class="btn primary" type="submit">Run Inference</button>
+          </div>
+        </form>
+        <div class="output">
+          <div class="output-header">
+            <h3>Response</h3>
+            <span id="inferStatus" class="pill neutral">idle</span>
+          </div>
+          <pre id="inferOutput"></pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Audit Log</h2>
+          <p>Local-only console for requests from this session.</p>
+        </div>
+        <div class="card">
+          <ul id="eventLog" class="list"></ul>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

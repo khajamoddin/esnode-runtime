@@ -1,0 +1,12 @@
+name: demo-gguf
+version: v0
+source:
+  kind: local_path
+  path: /models/llama.gguf
+format: gguf
+backend: llamacpp
+backend_settings:
+  threads: 8
+labels:
+  family: llama
+  quant: q4

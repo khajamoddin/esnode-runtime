@@ -10,26 +10,28 @@ A user can:
 ---
 
 ## M0 — Repo + build plumbing
-- [ ] Monorepo created with runtime-node (Rust) + gateway (Go)
-- [ ] Dockerfiles for gateway and runtime-node
-- [ ] docker-compose.yaml that runs:
+- [x] Monorepo created with runtime-server (Rust) + gateway (Go)
+- [x] Dockerfiles for gateway and runtime-server
+- [x] docker-compose.yaml that runs:
   - gateway
-  - runtime-node (and llama.cpp sidecar if used)
+  - runtime-server (and llama.cpp sidecar if used)
 - [ ] CI: build + unit tests
 
-## M1 — Runtime-node (Rust) + llama.cpp execution
-- [ ] Implement ExecutionEngine using llama.cpp sidecar OR FFI
-- [ ] Load model from a configured path
-- [ ] Generate streaming tokens
-- [ ] /health, /ready endpoints
+## M1 — Runtime-server (Rust) + backend execution
+- [x] HTTP server scaffold with ESNODE-native + OpenAI-compatible routes
+- [x] /healthz, /readyz endpoints
+- [x] Stub backend with streaming output (for local testing)
+- [ ] Implement llama.cpp backend (sidecar or FFI)
+- [ ] Load model from a configured path (real backend)
 - [ ] Hard limits: request timeout, max concurrent sessions, max ctx length
 
 ## M2 — Gateway (Go) APIs
 - [ ] OpenAI-compatible endpoint:
   - POST /v1/chat/completions
   - streaming (SSE)
+- [x] ESNODE-native endpoints forwarded over gRPC
 - [ ] API key auth middleware
-- [ ] Basic routing to runtime nodes (single node is OK in v0)
+- [ ] Basic routing to runtime servers (single node is OK in v0)
 - [ ] Request id propagation end-to-end
 
 ## M3 — Governance (enforcement)
@@ -53,10 +55,10 @@ A user can:
 - [ ] Helm chart scaffold (single namespace deploy)
 - [ ] K8s manifests for:
   - gateway Deployment + Service
-  - runtime-node Deployment + Service
+  - runtime-server Deployment + Service
 - [ ] Readiness/liveness probes working
 - [ ] Simple horizontal scaling:
-  - N runtime-node replicas behind a Service
+  - N runtime-server replicas behind a Service
   - gateway load balances per request
 
 ---
@@ -67,4 +69,5 @@ A user can:
   - model path
   - limits
   - telemetry endpoints
+- [x] Runtime Studio (Vite GUI) for load/list/infer/health
 - [ ] Basic eval runner (latency + "groundedness" smoke test)

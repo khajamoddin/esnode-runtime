@@ -1,64 +1,82 @@
 # ESNODE Runtime Architecture (v0)
 
 ## Overview
-ESNODE Runtime is split into two primary services:
-- **Gateway (Go)**: OpenAI-compatible API, policy enforcement, routing, telemetry.
-- **Runtime node (Rust)**: execution engine wrapper, model lifecycle, streaming tokens.
+ESNODE Runtime is organized as a small runtime stack plus optional UI:
+- **runtime-core (Rust crate)**: contract traits + request/response types. No backend deps.
+- **runtime-server (Rust binary)**: HTTP endpoints (OpenAI compat + ESNODE-native) and optional gRPC.
+- **gateway (Go)**: OpenAI-compatible API and ESNODE-native gRPC forwarding.
+- **runtime-studio (Vite UI)**: optional GUI for local ops and demos.
 
-v0 targets CPU-first GGUF inference via **llama.cpp**, initially as a sidecar process.
+Backends (llamacpp/onnxrt/torch) are stub crates today; they depend on `runtime-core` and plug into
+`runtime-server` via the backend registry.
 
-## Request flow (v0)
+## Request flow
+OpenAI path (HTTP):
 ```text
 Client
   |
   v
-Gateway (OpenAI-compatible API)
-  |
-  |-- policy.PreExecute (auth, rpm, token budget)
+Gateway (/v1/chat/completions)
   |
   v
-Runtime node (ExecutionEngine)
+Runtime server (HTTP /v1/chat/completions)
   |
   v
-llama.cpp sidecar (HTTP/IPC)
+Router -> backend -> model cache
   |
   v
-Runtime node (stream tokens)
+SSE/JSON response
+```
+
+ESNODE-native path (gRPC, optional):
+```text
+Client or Runtime Studio
   |
   v
-Gateway (SSE stream + metrics/traces)
+Gateway (/esnode/v1/*)
   |
   v
-Client
+Runtime server (gRPC RuntimeService)
+  |
+  v
+Router -> backend -> model cache
 ```
 
 ## Core contracts
-- **CanonicalRequest**: stable schema shared between gateway and runtime node.
-- **ExecutionEngine**: Rust trait for model lifecycle, streaming generation, health.
-- **PolicyEngine**: Go interface for pre/post execution enforcement.
+- **runtime-core**: `InferenceBackend`, `ModelSpec`, `InferRequest`, `StreamChunk`.
+- **runtime-proto**: gRPC `RuntimeService` for internal multi-process setups.
+- **runtime-server**: Router + bundle registry + cache/batching utilities.
 
-## Observability
-- **Metrics**: Prometheus counters/gauges/histograms for requests, errors, tokens, latency.
-- **Tracing**: OpenTelemetry spans across gateway -> policy -> runtime -> engine.
-- **Logs**: JSON logs with optional redaction flags from policy decisions.
+## Model bundles and registry
+Models are described in bundles under `bundles/<name>/model-spec.yaml`. The bundle registry:
+- resolves local paths relative to the bundle directory
+- optionally verifies SHA-256 when provided
+- supports list/load/resolve for ESNODE-native endpoints
+
+## Observability hooks
+`runtime-core` defines a minimal `TelemetrySink` for counters, histograms, and events. The server
+uses this interface but does not yet wire full OTel/Prometheus exporters.
 
 ## Deployment topology (v0)
-- Single gateway + one or more runtime nodes.
-- Runtime nodes are stateless per request; model loaded per node.
-- Gateway performs basic routing (round-robin is acceptable in v0).
+- Gateway on `:8080`
+- Runtime server HTTP on `:9090`
+- Runtime server gRPC on `:9091` (requires `proto-gen` feature)
+
+## Runtime Studio (GUI)
+Runtime Studio lives under `integrations/runtime-studio/`. It calls the gateway or runtime-server
+over HTTP and exposes health, model list/load, and inference (streaming + non-streaming).
 
 ## Evolution: sidecar-first to FFI
-**v0 (sidecar-first)**
-- Runtime node uses llama.cpp as a subprocess or remote HTTP/IPC service.
+**v0 (sidecar-first, planned)**
+- Runtime server can call a backend via HTTP/IPC (e.g., llama.cpp sidecar).
 - Pros: fast integration, fewer build/tooling constraints.
 - Cons: extra hop, separate lifecycle.
 
-**v0.x/v1 (FFI)**
-- Runtime node links llama.cpp via FFI or native binding.
+**v0.x/v1 (FFI, planned)**
+- Runtime server links backends via FFI or native bindings.
 - Pros: lower latency, tighter resource control.
 - Cons: build complexity, more platform constraints.
 
 ## Security and governance
-- Gateway enforces API keys, RPM, concurrency, and token budgets.
-- Runtime node applies hard limits as defense-in-depth (timeouts, max sessions, ctx size).
-- Audit tags flow from policy decisions into telemetry and logs.
+- Gateway is the policy enforcement point (auth, RPM, concurrency, token budgets).
+- Runtime server provides defense-in-depth (timeouts, cache limits).

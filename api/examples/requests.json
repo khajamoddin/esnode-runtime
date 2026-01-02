@@ -1,0 +1,26 @@
+{
+  "openai_chat": {
+    "model": "demo-gguf",
+    "stream": true,
+    "messages": [
+      {"role": "user", "content": "Hello from ESNODE"}
+    ]
+  },
+  "esnode_infer": {
+    "request_id": "req-1",
+    "model": "demo-gguf",
+    "input": {
+      "type": "chat",
+      "messages": [
+        {"role": "user", "content": "Hello from ESNODE"}
+      ]
+    },
+    "params": {
+      "stream": false,
+      "max_tokens": 64
+    },
+    "metadata": {
+      "tenant": "demo"
+    }
+  }
+}

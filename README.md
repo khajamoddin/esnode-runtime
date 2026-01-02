@@ -82,13 +82,80 @@ curl http://localhost:8080/v1/chat/completions \
   }'
 ```
 
+### 4) ESNODE-native endpoints (bundle-backed)
+```bash
+curl http://localhost:8080/esnode/v1/models
+```
+
+---
+
+## Model bundles
+Bundles live under `bundles/<name>/model-spec.yaml`. The runtime-server resolves relative paths
+inside the bundle directory and can verify SHA-256 checksums when provided.
+
+Example layout:
+```text
+bundles/
+  fixture-model/
+    model-spec.yaml
+    models/
+      fixture.gguf
+```
+
+---
+
+## Runtime Studio (GUI)
+Runtime Studio is a Vite-based UI for operating the runtime.
+
+```bash
+cd integrations/runtime-studio
+npm install
+npm run dev
+```
+
+Default base URL is `http://localhost:8080` (gateway). Use `http://localhost:9090` to hit the
+runtime-server directly. The GUI supports:
+- health/ready checks
+- list/load bundle models
+- ESNODE inference (streaming + non-streaming)
+- metrics link
+
+---
+
+## gRPC (optional)
+gRPC builds are gated behind the `proto-gen` feature to avoid requiring `protoc` for default builds.
+
+```bash
+cargo test -p runtime-server --features proto-gen
+```
+
+To run runtime-server with gRPC enabled:
+```bash
+cargo run -p runtime-server --features proto-gen
+```
+
 ---
 
 ## Repository layout
-- runtime-node/ — Rust runtime node that wraps the inference engine
-- gateway/ — Go gateway exposing OpenAI-compatible API + governance
+- crates/runtime-core/ — Rust contracts + types (backend-agnostic)
+- crates/runtime-server/ — Rust HTTP/gRPC server stub
+- crates/runtime-backend/ — backend registry + loader
+- crates/backend-*/ — backend implementations (onnxrt/llamacpp/torch)
+- crates/runtime-cli/ — `esnode` CLI stub
+- crates/runtime-proto/ — gRPC proto definitions
+- gateway/ — Go gateway exposing OpenAI-compatible API + governance (legacy stub)
+- api/ — OpenAPI + examples
+- bundles/ — sample model bundles
+- integrations/ — docker + kubernetes scaffolding
+- integrations/runtime-studio/ — Runtime Studio (Vite GUI)
 - docs/ — charter, milestones, architecture
-- deployments/ — docker-compose and Kubernetes/Helm scaffolding
+- deployments/ — legacy docker-compose location
+
+---
+
+## Linting (v0 defaults)
+- Rust: `cargo clippy --workspace --all-targets`
+- Go: `gofmt` (already used on gateway code)
 
 ---
 
